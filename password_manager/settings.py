@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = 'insecure-secret-key-12345' # Hardcoded 'secret' key
-DEBUG = True
+DEBUG = True # Exposed error page (Security Misconfiguration)
 
 ALLOWED_HOSTS = []
 
