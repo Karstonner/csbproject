@@ -1,0 +1,18 @@
+{% extends 'passwords/base.html' %}
+{% block content %}
+    <h2>Your Passwords</h2>
+    <form action="{% url 'search_passwords' %}" method="get">
+        <input type="text" name="q" placeholder="Search sites">
+        <button type="submit">Search</button>
+    </form>
+    <ul>
+    {% for password in passwords %}
+        <li>
+            {{ password.site_name }} (<a href="{% url 'password_detail' password.id %}">View</a> |
+            <a href="{% url 'password_delete' password.id %}">Delete</a>)
+        </li>
+    {% empty %}
+        <p>No passwords saved.</p>
+    {% endfor %}
+    </ul>
+{% endblock %}
