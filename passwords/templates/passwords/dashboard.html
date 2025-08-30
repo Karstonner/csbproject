@@ -1,6 +1,7 @@
 {% extends 'passwords/base.html' %}
 {% block content %}
     <h2>Your Passwords</h2>
+    <p><a href="{% url 'password_create' %}">Add New Password</a> | <a href="{% url 'generate_password' %}">Generate Password</a></p>
     <form action="{% url 'search_passwords' %}" method="get">
         <input type="text" name="q" placeholder="Search sites">
         <button type="submit">Search</button>
@@ -8,11 +9,21 @@
     <ul>
     {% for password in passwords %}
         <li>
-            {{ password.site_name }} (<a href="{% url 'password_detail' password.id %}">View</a> |
+            {{ password.site_name }}
+            {% if password.site_url %}
+                <img src="{% url 'fetch_favicon' password.id %}" alt="Favicon" width="16">
+            {% endif %}
+            (<a href="{% url 'password_detail' password.id %}">View</a> |
+            <a href="{% url 'password_edit' password.id %}">Edit</a> |
             <a href="{% url 'password_delete' password.id %}">Delete</a>)
+            {% if password.user == user %}
+                [Owned]
+            {% else %}
+                [Shared]
+            {% endif %}
         </li>
     {% empty %}
-        <p>No passwords saved.</p>
+        <p>No passwords saved or shared.</p>
     {% endfor %}
     </ul>
 {% endblock %}

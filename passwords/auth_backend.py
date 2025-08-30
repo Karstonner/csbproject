@@ -2,6 +2,9 @@ from django.contrib.auth.models import User
 
 class InsecureAuthBackend:
     def authenticate(self, request, username=None, password=None):
+        # FIX: Use Django's default authentication backend with hashed passwords
+        # from django.contrib.auth import authenticate
+        # return authenticate(request, username=username, password=password)
         try:
             user = User.objects.get(username__iexact=username) # Case insensitive
             if user.password == password: # Plaintext

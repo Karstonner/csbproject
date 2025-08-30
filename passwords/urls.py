@@ -6,4 +6,7 @@ urlpatterns = [
     path('password/<int:id>/', views.password_detail, name='password_detail'),
     path('delete/<int:id>/', views.password_delete, name='password_delete'),
     path('search/', views.search_passwords, name='search_passwords'),
+    path('create/', views.password_create, name='password_create'),
+    path('edit/<int:id>/', views.password_edit, name='password_edit'),
+    path('generate/', views.generate_password, name='generate_password'),
 ]
