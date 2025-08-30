@@ -1,13 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import connection
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from .models import PasswordEntry
-from .forms import PasswordEntryForm
+from .forms import PasswordEntryForm, LoginForm
 import requests
 import time
 import logging
 
-logger = logging.getlogger('django')
+logger = logging.getLogger('django')
 
 def dashboard(request):
     # Broken Access Control (A01): Show owned and shared passwords without checks
@@ -48,6 +50,7 @@ def search_passwords(request):
         results = cursor.fetchall()
     return render(request, 'passwords/search_results.html', {'results': results})
 
+@csrf_exempt
 def password_create(request):
     if request.method == 'POST':
         form = PasswordEntryForm(request.POST)
@@ -61,6 +64,7 @@ def password_create(request):
         form = PasswordEntryForm()
     return render(request, 'passwords/password_form.html', {'form': form})
 
+@csrf_exempt
 def password_edit(request, id):
     # Broken Access Control (A01): No ownership check
     # FIX: Restrict editing to the owner of the password entry
@@ -106,18 +110,28 @@ def generate_password(request):
     weak_password = seed[-8:]
     return render(request, 'passwords/generate_password.html', {'generated_password': weak_password})
 
+@csrf_exempt
 def custom_login(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            logger.info(f"User {username} logged in successfully")
-            return redirect('dashboard')
-        else:
-            # No logging of failed attempts (A09)
-            # FIX: Log failed login attempts for monitoring
-            # logger.warning(f"Failed login attempt for username: {username}")
-            return render(request, 'passwords/login.html', {'error': 'Invalid credentials'})
-    return render(request, 'passwords/login.html')
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                logger.info(f"User {username} logged in successfully")
+                return redirect('dashboard')
+            else:
+                # No logging of failed attempts (A09)
+                # FIX: Log failed login attempts for monitoring
+                # logger.warning(f"Failed login attempt for username: {username}")
+                return render(request, 'passwords/login.html', {'error': 'Invalid credentials'})
+    else:
+        form = LoginForm()
+    return render(request, 'passwords/login.html', {'form': form})
+
+@csrf_exempt
+def custom_logout(request):
+    logout(request)
+    return redirect('login')

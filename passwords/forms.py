@@ -2,6 +2,10 @@ from django import forms
 from .models import PasswordEntry
 from django.contrib.auth.models import User
 
+class LoginForm(forms.Form):
+    username = forms.CharField(max_length=150)
+    password = forms.CharField(widget=forms.PasswordInput)
+
 class PasswordEntryForm(forms.ModelForm):
     shared_with = forms.ModelMultipleChoiceField(
         queryset=User.objects.all(),

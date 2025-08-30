@@ -9,4 +9,6 @@ urlpatterns = [
     path('create/', views.password_create, name='password_create'),
     path('edit/<int:id>/', views.password_edit, name='password_edit'),
     path('generate/', views.generate_password, name='generate_password'),
+    path('fetch_favicon/<int:id>', views.fetch_favicon, name='fetch_favicon'),
+    path('logout/', views.custom_logout, name='logout'),
 ]
