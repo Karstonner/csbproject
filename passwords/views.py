@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import connection
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import PasswordEntry
@@ -15,8 +16,14 @@ def dashboard(request):
     # Broken Access Control (A01): Show owned and shared passwords without checks
     # FIX: Filter passwords to ensure only owned or shared passwords are accessible
     # passwords = PasswordEntry.objects.filter(user=request.user).union(PasswordEntry.objects.filter(shared_with=request.user)).distinct()
-    owned_passwords = PasswordEntry.objects.filter(user=request.user)
-    shared_passwords = PasswordEntry.objects.filter(shared_with=request.user)
+    if not getattr(request, 'user', None) or not request.user.is_authenticated:
+        owned_passwords = PasswordEntry.objects.none()
+        shared_passwords = PasswordEntry.objects.none()
+    else:
+        user = request.user
+        owned_passwords = PasswordEntry.objects.filter(user=user)
+        shared_passwords = PasswordEntry.objects.filter(shared_with=user)
+    
     return render(request, 'passwords/dashboard.html', {
         'passwords': owned_passwords | shared_passwords
     })
@@ -51,6 +58,7 @@ def search_passwords(request):
     return render(request, 'passwords/search_results.html', {'results': results})
 
 @csrf_exempt
+@login_required
 def password_create(request):
     if request.method == 'POST':
         form = PasswordEntryForm(request.POST)
@@ -65,6 +73,7 @@ def password_create(request):
     return render(request, 'passwords/password_form.html', {'form': form})
 
 @csrf_exempt
+@login_required
 def password_edit(request, id):
     # Broken Access Control (A01): No ownership check
     # FIX: Restrict editing to the owner of the password entry
@@ -115,12 +124,14 @@ def custom_login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            username = request.POST.get('username')
-            password = request.POST.get('password')
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
+            user = authenticate(
+                request, 
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password']
+            )
+            if user:
                 login(request, user)
-                logger.info(f"User {username} logged in successfully")
+                logger.info(f"User {user.username} logged in successfully")
                 return redirect('dashboard')
             else:
                 # No logging of failed attempts (A09)

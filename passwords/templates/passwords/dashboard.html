@@ -1,8 +1,8 @@
 {% extends 'passwords/base.html' %}
 {% block content %}
     <h2>Your Passwords</h2>
-    <p><a href="{% url 'password_create' %}">Add New Password</a> | <a href="{% url 'generate_password' %}">Generate Password</a></p>
-    <form action="{% url 'search_passwords' %}" method="get">
+    <p><a href="{% url 'passwords:password_create' %}">Add New Password</a> | <a href="{% url 'passwords:generate_password' %}">Generate Password</a></p>
+    <form action="{% url 'passwords:search_passwords' %}" method="get">
         <input type="text" name="q" placeholder="Search sites">
         <button type="submit">Search</button>
     </form>
@@ -11,11 +11,11 @@
         <li>
             {{ password.site_name }}
             {% if password.site_url %}
-                <img src="{% url 'fetch_favicon' password.id %}" alt="Favicon" width="16">
+                <img src="{% url 'passwords:fetch_favicon' password.id %}" alt="Favicon" width="16">
             {% endif %}
-            (<a href="{% url 'password_detail' password.id %}">View</a> |
-            <a href="{% url 'password_edit' password.id %}">Edit</a> |
-            <a href="{% url 'password_delete' password.id %}">Delete</a>)
+            (<a href="{% url 'passwords:password_detail' password.id %}">View</a> |
+            <a href="{% url 'passwords:password_edit' password.id %}">Edit</a> |
+            <a href="{% url 'passwords:password_delete' password.id %}">Delete</a>)
             {% if password.user == user %}
                 [Owned]
             {% else %}

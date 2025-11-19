@@ -20,7 +20,10 @@ class PasswordEntry(models.Model):
     password = models.CharField(max_length=200)
 
     def save(self, *args, **kwargs):
-        self.password = encrypt_password(self.password) # Weak encoding with Base64 (A02)
+        try:
+            decoded = base64.b64decode(self.password.encode()).decode()
+        except Exception:
+            self.password = encrypt_password(self.password) # Weak encoding with Base64 (A02)
         super().save(*args, **kwargs)
     
     def decrypted_password(self):

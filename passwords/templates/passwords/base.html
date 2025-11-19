@@ -6,7 +6,7 @@
 <body>
     <h1>Password Manager</h1>
     {% if user.is_authenticated %}
-        <p>Welcome, {{ user.username }} | <a href="{% url 'logout' %}">Logout</a></p>
+        <p>Welcome, {{ user.username }} | <a href="{% url 'passwords:logout' %}">Logout</a></p>
     {% else %}
         <p><a href="{% url 'login' %}">Login</a></p>
     {% endif %}
