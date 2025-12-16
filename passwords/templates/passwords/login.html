@@ -1,10 +1,7 @@
-{% extends 'passwords/base.html' %}
-{% block content %}
-    <h2>Login</h2>
-    <!-- FIX: Include CSRF token for secure form submission -->
-    <!-- {% csrf_token %} -->
-    <form method="post">
-        {{ form.as_p }}
-        <button type="submit">Login</button>
-    </form>
+{% extends 'passwords/base.html' %} {% block content %}
+<h2>Login</h2>
+<form method="post">
+  {% csrf_token %} {{ form.as_p }}
+  <button type="submit">Login</button>
+</form>
 {% endblock %}

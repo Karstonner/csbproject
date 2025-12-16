@@ -1,16 +1,35 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Password Manager</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Password Manager</h1>
     {% if user.is_authenticated %}
-        <p>Welcome, {{ user.username }} | <a href="{% url 'passwords:logout' %}">Logout</a></p>
+    <p>
+      Welcome, {{ user.username }} |
+      <a href="{% url 'passwords:logout' %}">Logout</a>
+    </p>
     {% else %}
-        <p><a href="{% url 'login' %}">Login</a></p>
-    {% endif %}
-    {% block content %}
-    {% endblock %}
-</body>
+    <p><a href="{% url 'login' %}">Login</a></p>
+    {% endif %} {% block content %} {% endblock %}
+
+    <script>
+      function getCookie(name) {
+        const v = document.cookie.match(
+          "(^|;)\\s*" + name + "\\s*=\\s*([^;]+)"
+        );
+        return v ? v.pop() : "";
+      }
+      const csrfToken = getCookie("csrfToken");
+
+      async function fetchWithCsrf(url, options = {}) {
+        options.credentials = options.credentials || "same-origin";
+        options.headers = options.headers || {};
+        if (!options.headers["X-CSRFToken"])
+          options.headers["X-CSRFToken"] = csrfToken;
+        return fetch(url, options);
+      }
+    </script>
+  </body>
 </html>

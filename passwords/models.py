@@ -1,15 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import User
-import base64
-# FIX: Import a secure encryption library
-# from cryptography.fernet import Fernet
+from django.conf import settings
+from cryptography.fernet import Fernet, InvalidToken
+
+FERNET_KEY = getattr(settings, 'FERNET_KEY', None)
+if FERNET_KEY is None:
+    raise RuntimeError("FERNET_KEY is not set in Django settings")
+
+fernet = Fernet(FERNET_KEY.encode() if isinstance(FERNET_KEY, str) else FERNET_KEY)
 
 def encrypt_password(password):
-    # FIX: Use a secure encryption method (e.g., Fernet with a securely stored key)
-    # key = Fernet.generate_key() # Generate key securely and store it safely
-    # fernet = Fernet(key)
-    # return fernet.encrypt(password.encode()).decode()
-    return base64.b64encode(password.encode()).decode()
+    return fernet.encrypt(password.encode()).decode()
 
 class PasswordEntry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_passwords')
@@ -21,13 +22,14 @@ class PasswordEntry(models.Model):
 
     def save(self, *args, **kwargs):
         try:
-            decoded = base64.b64decode(self.password.encode()).decode()
-        except Exception:
-            self.password = encrypt_password(self.password) # Weak encoding with Base64 (A02)
+            fernet.decrypt(self.password.encode())
+        except (InvalidToken, Exception):
+            self.password = encrypt_password(self.password)
         super().save(*args, **kwargs)
     
     def decrypted_password(self):
-        # FIX: Use corresponding decryption method
-        # fernet = Fernet(key) # Load the same key used for encryption
-        # return fernet.decrypt(self.password.encode()).decode()
-        return base64.b64decode(self.password.encode()).decode()
+        try:
+            return fernet.decrypt(self.password.encode()).decode()
+        except InvalidToken:
+            return None
+        
